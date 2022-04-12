@@ -1,0 +1,26 @@
+
+[tool.poetry]
+name = "attckcli"
+version = "0.1.0"
+description = "A simple CLI to interact with ATT&CK data."
+authors = ["Marc Brooks <marcwbrooks@gmail.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+click = "^8.1.2"
+rich = "^12.1.0"
+rich-click = "^1.3.0"
+pyattck = "^5.3.0"
+tabulate = "^0.8.9"
+textual = "^0.1.17"
+
+[tool.poetry.dev-dependencies]
+
+[tool.poetry.scripts]
+attckcli = "attckcli.cli:cli"
+attcktui = "attckcli.tui:tui"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
