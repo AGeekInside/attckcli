@@ -3,15 +3,21 @@ import json
 import click
 from textual.app import App
 from textual import events
-from textual.widgets import Placeholder, Header, Footer, ScrollView, TreeControl, TreeClick, NodeID
+from textual.widgets import (
+    Placeholder,
+    Header,
+    Footer,
+    ScrollView,
+    TreeControl,
+    TreeClick,
+    NodeID,
+)
 
 ATTCK_DICT = {}
 
 
 def process_attck(attck_dict):
-    attck_info = {
-        
-    }
+    attck_info = {}
 
 
 class ATTCKApp(App):
@@ -34,10 +40,10 @@ class ATTCKApp(App):
 
         technique_tree = TreeControl("Technique Tree", data="root")
         # for node_num in range(4):
-            # technique_tree.add(node_id=NodeID(node_num),label=f"node_{node_num}")
+        # technique_tree.add(node_id=NodeID(node_num),label=f"node_{node_num}")
 
         await self.view.dock(technique_tree, name="technique_tree")
-        # await self.view.dock(ScrollView(self.listing), edge="left", size=48, name="sidebar") 
+        # await self.view.dock(ScrollView(self.listing), edge="left", size=48, name="sidebar")
         await self.view.dock(self.body, edge="top")
 
         async def handle_tree_click(self, message: TreeClick) -> None:
@@ -56,5 +62,5 @@ def tui(attck_json):
     with open(attck_json) as input_json:
         ATTCK_DICT = json.load(input_json)
 
-    # print(ATTCK_DICT) 
+    # print(ATTCK_DICT)
     ATTCKApp.run(title="ATT&CK Viewer App", log="textual.log")
