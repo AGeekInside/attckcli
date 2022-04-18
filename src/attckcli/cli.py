@@ -46,14 +46,6 @@ def cli(debug):
     pass
 
 
-# @click.option(
-# "-u",
-# "--url",
-# envvar="ATTCK_BASEURL",
-# default="https://raw.githubusercontent.com/mitre/cti/master/",
-# )
-
-
 @cli.command(cls=SharedOptions)
 @click.option(
     "-d",
