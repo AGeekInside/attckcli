@@ -1,11 +1,19 @@
 from sqlalchemy import Boolean
 from sqlalchemy import Column
+from sqlalchemy import create_engine
 from sqlalchemy import ForeignKey
 from sqlalchemy import Integer
 from sqlalchemy import String
 from sqlalchemy import Table
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Session 
+from sqlalchemy.orm import sessionmaker 
+
+SQLLITE_DATABASEFILE="sqlite:///attckcli.db"
+engine = create_engine(SQLLITE_DATABASEFILE, echo=False, future=True)
+
+Session = sessionmaker(engine)
 
 Base = declarative_base()
 
@@ -16,8 +24,8 @@ matrix_to_tactic_table = Table(
     Column("tactic_id", ForeignKey("tactic.id"), primary_key=True),
 )
 
-tactic_to_pattern_table = Table(
-    "matrix_to_tactic",
+tactic_to_attack_pattern_table = Table(
+    "tactic_to_attack_pattern",
     Base.metadata,
     Column("tactic_id", ForeignKey("tactic.id"), primary_key=True),
     Column("attack_pattern_id", ForeignKey("attack_pattern.id"), primary_key=True),
@@ -48,8 +56,8 @@ class Tactic(Base):
     )
     attack_patterns = relationship(
         "AttackPattern",
-        secondary=tactic_to_pattern_table,
-        back_populates="attack_patterns",
+        secondary=tactic_to_attack_pattern_table,
+        back_populates="tactics",
     )
 
 
@@ -61,15 +69,16 @@ class AttackPattern(Base):
     version = Column(String(20))
     attck_id = Column(String(75))
     is_subtechnique = Column(Boolean())
-    attack_patterns = relationship(
-        "AttackPattern",
-        secondary=tactic_to_pattern_table,
+    tactics = relationship(
+        "Tactic",
+        secondary=tactic_to_attack_pattern_table,
         back_populates="attack_patterns",
     )
 
 
 def load_database(matrices):
     print(f"Loading ATT&CK data into the database.")
+
 
     for matrix in matrices:
         name = matrix["name"]
@@ -97,3 +106,16 @@ def load_database(matrices):
         print(
             f"Found {len(matrix['attack_patterns']):,} attack patterns in {name} matrix."
         )
+
+        with engine.connect() as conn:
+            Base.metadata.create_all(engine)
+            with Session() as session:
+                work_matrix = Matrix(name=name, attck_id=attck_id)
+    
+                for tactic_id in tactics:
+                    work_tactic = Tactic(name=tactics[tactic_id]['name'], attck_id=tactic_id)
+                    work_matrix.tactics.append(work_tactic)
+    
+                    session.add(work_tactic)
+                session.add(work_matrix)
+                session.commit() 

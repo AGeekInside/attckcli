@@ -4,23 +4,10 @@ from pyattck import Attck
 from rich import print
 
 from .download import download_json
+from .database import load_database
 
 
 attack = Attck()
-matrices = [
-    {
-        "name": "enterprise",
-        "url_ending": "enterprise-attack/enterprise-attack.json",
-    },
-    {
-        "name": "mobile",
-        "url_ending": "mobile-attack/mobile-attack.json",
-    },
-    {
-        "name": "ics",
-        "url_ending": "ics-attack/ics-attack.json",
-    },
-]
 
 
 class SharedOptions(click.Command):
@@ -40,9 +27,33 @@ class SharedOptions(click.Command):
         )
 
 
+def load_matrices(base_url):
+    matrices = [
+        {
+            "name": "enterprise",
+            "url_ending": "enterprise-attack/enterprise-attack.json",
+        },
+        {
+            "name": "mobile",
+            "url_ending": "mobile-attack/mobile-attack.json",
+        },
+        {
+            "name": "ics",
+            "url_ending": "ics-attack/ics-attack.json",
+        },
+    ]
+    for matrix in matrices:
+        print(f"Downloading JSON for {matrix['name']}.")
+        download_url = f"{base_url}{matrix['url_ending']}"
+        matrix["download_url"] = download_url
+        matrix["json"] = download_json(download_url)
+        matrix["objects"] = matrix["json"]["objects"]
+
+    return matrices
+
+
 @click.group()
-@click.option("--debug/--no-debug", default=False)
-def cli(debug):
+def cli():
     pass
 
 
@@ -55,13 +66,17 @@ def cli(debug):
 )
 def download(url, data_dir):
 
+    matrices = load_matrices(url)
     for matrix in matrices:
-        print(f"Downloading JSON for {matrix['name']}.")
-        matrix["json"] = download_json(f"{url}{matrix['url_ending']}")
-        objects = matrix["json"]["objects"]
-
         with open(f"{data_dir}/{matrix['name']}-attack.json", "w") as output_jsonfile:
             json.dump(matrix["json"], output_jsonfile)
+
+
+@cli.command(cls=SharedOptions)
+def setup(url):
+
+    matrices = load_matrices(url)
+    load_database(matrices)
 
 
 @cli.command()
