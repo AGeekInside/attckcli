@@ -81,8 +81,8 @@ def setup(url):
 
 @cli.command()
 @click.option("-m", "--matrix", envvar="ATTCKCLI_MATRIX", default="enterprise")
-@click.option("--references/--no-references", default=False)
-def list(matrix, references):
+@click.option("--reference/--no-reference", default=False)
+def list(matrix, reference):
     techniques = []
 
     for technique in getattr(attack, matrix).techniques:
@@ -90,16 +90,20 @@ def list(matrix, references):
         technique_info = {
             "id": technique.id,
             "name": technique.name,
-            "reference": technique.reference,
         }
+        if reference:
+            technique_info["reference"] = technique.reference
         if len(technique.subtechniques) > 0:
             technique_info["subtechniques"] = []
             for subtechnique in technique.subtechniques:
-                technique_info["subtechniques"].append( {
+                subtechnique_info = {
                     "id": subtechnique.id, 
                     "name": subtechnique.name,
-                    "reference": subtechnique.reference,
-                })
+                }
+                if reference:
+                    subtechnique_info["reference"] = subtechnique.reference
+
+                technique_info["subtechniques"].append(subtechnique_info)
 
         techniques.append(technique_info)
 
